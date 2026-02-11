@@ -52,25 +52,7 @@ bcrypt
 
 dotenv
 
-Project Structure:
-.
-├── APIs
-│   ├── CommonAPI.js
-│   ├── UserAPI.js
-│   ├── AuthorAPI.js
-│   └── AdminAPI.js
-├── middlewares
-│   ├── verifyToken.js
-│   └── checkAuthor.js
-├── models
-│   ├── UserTypeModel.js
-│   └── ArticleModel.js
-├── services
-│   └── authservices.js
-├── server.js
-├── .env
-├── .gitignore
-└── package.json
+
 
 Environment Setup:
 
