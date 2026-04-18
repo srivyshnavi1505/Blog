@@ -13,7 +13,7 @@ config() //process.env
 const app = exp()
 
 
-app.use(cors({origin:["http://localhost:5175"],credentials:true}));
+app.use(cors({origin:["http://localhost:5175","https://ink-it-blog.onrender.com"],credentials:true}));
 //add body parser middleware
 app.use(exp.json())  //
 //add logging middleware
