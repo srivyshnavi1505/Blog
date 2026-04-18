@@ -1,104 +1,103 @@
-### Backend development
-1.create git repo
-git init
-2.add .gitignore 
-3. create .env file for environment variables & read data from .env with dotenv
-4.generate package.json
-5.CREATE Express app
-6.connect to database
-7. Add middleware (body parser,err habdling )
-8.Design Schema  and create models 
-9.Design REST APIs for all resources
+# InkIT Blog — Backend
 
-=> backend can be used by some other applications as well , not only for the frontend  of this project 
-the API's are very flexible such that it can be integrated with many other applications like java applications , mobile applications 
-but only when the req and responses are same as per our backend. 
+A REST API for the InkIT Blog platform built with Node.js, Express, and MongoDB.
 
-Blog Platform Backend – Role Based APIs 
+## Tech Stack
 
-This project is a backend REST API built using Node.js, Express, and MongoDB as part of training classes. It demonstrates authentication, authorization, and role-based access control for three types of users: User, Author, and Admin.
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB (Atlas) + Mongoose
+- **Auth**: JWT (via httpOnly cookies)
+- **File Upload**: Multer + Cloudinary
+- **Password Hashing**: bcryptjs
 
-Features Implemented :
+## Project Structure
 
-->User registration and login
+```
+backend/
+├── APIs/
+│   ├── AdminAPI.js       # Admin routes (block/unblock users, view all articles)
+│   ├── AuthorAPI.js      # Author routes (CRUD articles, register)
+│   ├── CommonAPI.js      # Shared routes (login, logout, check-auth)
+│   └── UserAPI.js        # User routes (view articles, add comments)
+├── middlewares/
+│   ├── verifyToken.js    # JWT verification middleware
+│   └── checkAuthor.js    # Author role verification
+├── models/
+│   ├── UserTypeModel.js  # User schema (USER / AUTHOR / ADMIN)
+│   └── ArticleModel.js   # Article schema
+├── services/
+│   └── authServices.js   # Register & authenticate logic
+├── config/
+│   ├── cloudinary.js
+│   ├── cloudinaryUpload.js
+│   └── multer.js
+└── server.js
+```
 
-->JWT-based authentication
+## API Routes
 
-->Role-based access (USER, AUTHOR, ADMIN)
+### Common (`/common-api`)
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/login` | Login with email & password |
+| GET | `/logout` | Clear auth cookie |
+| GET | `/check-auth` | Verify session (used on page refresh) |
+| PUT | `/change-password` | Change user password |
 
-->Password hashing using bcrypt
+### User (`/user-api`)
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/users` | Register as user |
+| GET | `/articles` | Get all active articles |
+| PUT | `/articles` | Add comment to article |
 
-->Protected routes using middleware
+### Author (`/author-api`)
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/users` | Register as author |
+| POST | `/articles` | Create article |
+| GET | `/articles/:authorId` | Get author's articles |
+| GET | `/article/:id` | Get single article |
+| PUT | `/articles/:articleId` | Edit article |
+| PATCH | `/articles/:id/status` | Soft delete / restore article |
 
-->Author APIs to manage articles
+### Admin (`/admin-api`)
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/articles` | Get all articles |
+| PUT | `/block/:uid` | Block a user |
+| PUT | `/unblock/:uid` | Unblock a user |
 
-->Admin APIs to manage users (block/unblock) and view articles
+## Environment Variables
 
-->Centralized error handling
+Create a `.env` file in the root of the backend folder:
 
-
-
-Tech Stack Used:
-
-Node.js
-
-Express.js
-
-MongoDB with Mongoose
-
-JWT (JSON Web Token)
-
-bcrypt
-
-dotenv
-
-
-
-Environment Setup:
-
-Create a .env file in the root directory:
-
+```env
 PORT=4000
-DB_URL=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
+DB_URL=your_mongodb_atlas_connection_string
+JWT_SECRET=your_jwt_secret
+CLOUD_NAME=your_cloudinary_cloud_name
+API_KEY=your_cloudinary_api_key
+API_SECRET=your_cloudinary_api_secret
+NODE_ENV=development
+```
 
-API Endpoints Covered in Training :
-Common APIs
+## Getting Started
 
-POST /common-api/register
-
-POST /common-api/login
-
-User APIs
-
-User profile related APIs
-
-Author APIs
-
-Create article
-
-Update article
-
-Delete article
-
-Admin APIs
-
-View all articles
-
-Block user
-
-Unblock user
-
-How to Run the Project :
-
-Install dependencies
-
+```bash
+# Install dependencies
 npm install
 
+# Run in development
+npm run dev
 
-Add .env file with required values
-
-Start the server
-
+# Run in production
 npm start
+```
 
+## Deployment
+
+Deployed on **Render** as a Web Service.
+- Build command: `npm install`
+- Start command: `node server.js`
