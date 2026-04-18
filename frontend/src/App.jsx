@@ -13,7 +13,7 @@ import { Toaster } from 'react-hot-toast'
 import ProtectedRoute from "./components/ProtectedRoute";
 import Unauthorized from "./components/Unauthorized";
 import AuthorArticles from "./components/AuthorArticles";
-import EditArticle from "./components/EditArticle"; // ✅ added
+import EditArticle from "./components/EditArticle"; 
 
 function App() {
 
