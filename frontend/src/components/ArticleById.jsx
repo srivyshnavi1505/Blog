@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../config/axiosConfig";
 import { useLocation, useParams, useNavigate } from "react-router";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../store/authStore";
@@ -17,10 +17,7 @@ function ArticleByID() {
 
   const getArticleById = async () => {
     try {
-      const res = await axios.get(
-        `http://localhost:4000/author-api/article/${id}`,
-        { withCredentials: true }
-      );
+      const res = await API.get(`/author-api/article/${id}`);
       setArticle(res.data.payload);
     } catch (err) {
       console.log(err);
@@ -44,17 +41,12 @@ function ArticleByID() {
 
     setSubmittingComment(true);
     try {
-      const res = await axios.put(
-        "http://localhost:4000/user-api/articles",
-        {
-          articleId: id,
-          userId: currentUser._id,
-          comment: comment.trim(),
-        },
-        { withCredentials: true }
-      );
+      const res = await API.put("/user-api/articles", {
+        articleId: id,
+        userId: currentUser._id,
+        comment: comment.trim(),
+      });
 
-      // Update article comments locally
       setArticle(res.data.payload);
       setComment("");
       toast.success("Comment added!");
@@ -113,7 +105,7 @@ function ArticleByID() {
           {article.content}
         </div>
 
-        {/* ── COMMENTS SECTION ── */}
+        {/* COMMENTS SECTION */}
         <div className="border-t border-zinc-800 pt-10">
           <h2 className="text-white font-bold text-xl mb-6">
             Comments

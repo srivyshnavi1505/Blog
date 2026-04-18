@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../config/axiosConfig";
 import { useNavigate } from "react-router";
 import { useAuth } from "../store/authStore";
 import { toast } from "react-hot-toast";
@@ -12,19 +12,13 @@ function AuthorArticles() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // ✅ FIX: after refresh, check-auth returned JWT payload { userId } not { _id }
-  // Now check-auth returns full DB user so _id is always present,
-  // but keep userId fallback for safety
   const authorId = user?._id || user?.userId;
 
   const fetchArticles = async () => {
     if (!authorId) return;
     setLoading(true);
     try {
-      const res = await axios.get(
-        `http://localhost:4000/author-api/articles/${authorId}`,
-        { withCredentials: true }
-      );
+      const res = await API.get(`/author-api/articles/${authorId}`);
       setArticles(res.data.payload);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch articles");
@@ -48,11 +42,9 @@ function AuthorArticles() {
   const toggleStatus = async (article) => {
     const newStatus = !article.isArticleActive;
     try {
-      await axios.patch(
-        `http://localhost:4000/author-api/articles/${article._id}/status`,
-        { isArticleActive: newStatus },
-        { withCredentials: true }
-      );
+      await API.patch(`/author-api/articles/${article._id}/status`, {
+        isArticleActive: newStatus,
+      });
       toast.success(newStatus ? "Article restored!" : "Article deleted!");
       setArticles((prev) =>
         prev.map((a) =>

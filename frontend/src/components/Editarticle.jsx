@@ -1,155 +1,142 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { useState } from "react";
-import axios from "axios";
-import { toast } from "react-hot-toast";
-import { useNavigate, useParams } from "react-router";
+import { useEffect, useState } from "react";
+import API from "../config/axiosConfig";
+import { useNavigate } from "react-router";
 import { useAuth } from "../store/authStore";
+import { toast } from "react-hot-toast";
 
-function EditArticle() {
-  const { articleId } = useParams();
+function AuthorArticles() {
   const navigate = useNavigate();
-  const currentUser = useAuth((state) => state.currentUser);
+  const user = useAuth((state) => state.currentUser);
 
-  const [loadingArticle, setLoadingArticle] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm();
+  const authorId = user?._id || user?.userId;
 
-  // Load existing article data into form
-  useEffect(() => {
-    const fetchArticle = async () => {
-      try {
-        const res = await axios.get(
-          `http://localhost:4000/author-api/article/${articleId}`,
-          { withCredentials: true }
-        );
-        const { title, category, content } = res.data.payload;
-        reset({ title, category, content });
-      } catch (err) {
-        toast.error("Failed to load article");
-        navigate("/author-profile/articles");
-      } finally {
-        setLoadingArticle(false);
-      }
-    };
-
-    fetchArticle();
-  }, [articleId]);
-
-  const onSubmit = async (data) => {
-    setSubmitting(true);
+  const fetchArticles = async () => {
+    if (!authorId) return;
+    setLoading(true);
     try {
-      await axios.put(
-        `http://localhost:4000/author-api/articles/${articleId}`,
-        data,
-        { withCredentials: true }
-      );
-      toast.success("Article updated successfully!");
-      navigate("/author-profile/articles");
+      const res = await API.get(`/author-api/articles/${authorId}`);
+      setArticles(res.data.payload);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to update article");
+      setError(err.response?.data?.message || "Failed to fetch articles");
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
-  if (loadingArticle) {
+  useEffect(() => {
+    fetchArticles();
+  }, [authorId]);
+
+  const openArticle = (article) => {
+    navigate(`/article/${article._id}`, { state: article });
+  };
+
+  const editArticle = (article) => {
+    navigate(`/author-profile/edit-article/${article._id}`);
+  };
+
+  const toggleStatus = async (article) => {
+    const newStatus = !article.isArticleActive;
+    try {
+      await API.patch(`/author-api/articles/${article._id}/status`, {
+        isArticleActive: newStatus,
+      });
+      toast.success(newStatus ? "Article restored!" : "Article deleted!");
+      setArticles((prev) =>
+        prev.map((a) =>
+          a._id === article._id ? { ...a, isArticleActive: newStatus } : a
+        )
+      );
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update status");
+    }
+  };
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      dateStyle: "medium",
+    });
+  };
+
+  if (loading) return <p className="text-xl text-center text-zinc-400 mt-10">Loading articles...</p>;
+  if (error) return <p className="text-red-400 text-center mt-10">{error}</p>;
+
+  if (articles.length === 0) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <p className="text-zinc-400 text-lg animate-pulse">Loading article...</p>
+      <div className="text-center text-zinc-500 mt-16">
+        <p className="text-lg">You haven't published any articles yet.</p>
+        <button
+          onClick={() => navigate("/author-profile/add-article")}
+          className="mt-4 bg-teal-500 hover:bg-teal-400 text-white px-6 py-2 rounded-lg transition-colors"
+        >
+          Write your first article
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="flex justify-center items-start min-h-screen bg-zinc-950 px-4 py-12">
-      <div className="w-full max-w-2xl">
-
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-zinc-500 hover:text-zinc-300 text-sm mb-4 flex items-center gap-1 transition-colors"
-          >
-            ← Back
-          </button>
-          <h1 className="text-3xl font-bold text-white">Edit Article</h1>
-          <p className="text-zinc-500 mt-1 text-sm">Update your article details below</p>
-        </div>
-
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 flex flex-col gap-5"
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      {articles.map((article) => (
+        <div
+          key={article._id}
+          className={`bg-zinc-900 border rounded-xl p-5 flex flex-col transition-all hover:shadow-lg
+            ${article.isArticleActive
+              ? "border-zinc-800 hover:border-teal-500/50 hover:shadow-teal-500/5"
+              : "border-red-900/40 opacity-60"
+            }`}
         >
-          {/* Title */}
-          <div>
-            <label className="text-zinc-400 text-sm font-medium mb-1 block">Title</label>
-            <input
-              placeholder="Article title"
-              className="w-full bg-zinc-800 border border-zinc-700 focus:border-teal-500 outline-none text-white rounded-lg px-4 py-2.5 transition-colors"
-              {...register("title", { required: "Title is required" })}
-            />
-            {errors.title && (
-              <p className="text-red-400 text-xs mt-1">{errors.title.message}</p>
-            )}
-          </div>
+          {!article.isArticleActive && (
+            <span className="text-xs text-red-400 font-semibold mb-2">● Deleted</span>
+          )}
 
-          {/* Category */}
-          <div>
-            <label className="text-zinc-400 text-sm font-medium mb-1 block">Category</label>
-            <input
-              placeholder="e.g. Technology, Travel, Food"
-              className="w-full bg-zinc-800 border border-zinc-700 focus:border-teal-500 outline-none text-white rounded-lg px-4 py-2.5 transition-colors"
-              {...register("category", { required: "Category is required" })}
-            />
-            {errors.category && (
-              <p className="text-red-400 text-xs mt-1">{errors.category.message}</p>
-            )}
-          </div>
+          <span className="text-teal-400 text-xs font-semibold uppercase tracking-wider">
+            {article.category}
+          </span>
 
-          {/* Content */}
-          <div>
-            <label className="text-zinc-400 text-sm font-medium mb-1 block">Content</label>
-            <textarea
-              placeholder="Write your article content..."
-              rows="10"
-              className="w-full bg-zinc-800 border border-zinc-700 focus:border-teal-500 outline-none text-white rounded-lg px-4 py-2.5 transition-colors resize-none"
-              {...register("content", { required: "Content is required" })}
-            />
-            {errors.content && (
-              <p className="text-red-400 text-xs mt-1">{errors.content.message}</p>
-            )}
-          </div>
+          <p className="text-white font-bold mt-1 mb-2 leading-snug">{article.title}</p>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
+          <p className="text-zinc-500 text-sm flex-1">
+            {article.content.slice(0, 80)}...
+          </p>
+
+          <p className="text-zinc-600 text-xs mt-3">{formatDate(article.createdAt)}</p>
+
+          <div className="flex gap-2 mt-4">
             <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="flex-1 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 py-2.5 rounded-xl transition-colors"
+              className="text-teal-400 hover:text-teal-300 text-sm font-medium transition-colors"
+              onClick={() => openArticle(article)}
             >
-              Cancel
+              Read →
             </button>
+
             <button
-              type="submit"
-              disabled={submitting}
-              className="flex-1 bg-teal-500 hover:bg-teal-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-xl transition-colors"
+              className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors ml-auto"
+              onClick={() => editArticle(article)}
             >
-              {submitting ? "Saving..." : "Save Changes"}
+              Edit
+            </button>
+
+            <button
+              className={`text-sm font-medium transition-colors ${
+                article.isArticleActive
+                  ? "text-red-400 hover:text-red-300"
+                  : "text-green-400 hover:text-green-300"
+              }`}
+              onClick={() => toggleStatus(article)}
+            >
+              {article.isArticleActive ? "Delete" : "Restore"}
             </button>
           </div>
-        </form>
-
-      </div>
+        </div>
+      ))}
     </div>
   );
 }
 
-export default EditArticle;
+export default AuthorArticles;

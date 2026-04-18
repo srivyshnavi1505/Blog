@@ -1,47 +1,37 @@
-
-import React, { useEffect, useState } from 'react'
-import { useAuth } from '../store/authStore'
-import { useNavigate } from 'react-router'
-import axios from 'axios'
-import { toast } from 'react-hot-toast'
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../store/authStore";
+import { useNavigate } from "react-router";
+import API from "../config/axiosConfig";
+import { toast } from "react-hot-toast";
 
 function UserDashboard() {
-  
-  const logout = useAuth(state => state.logout)
-  const currentUser = useAuth(state => state.currentUser)
-  const navigate = useNavigate()
- 
-  const [articles, setArticles] = useState([])
+
+  const logout = useAuth(state => state.logout);
+  const currentUser = useAuth(state => state.currentUser);
+  const navigate = useNavigate();
+
+  const [articles, setArticles] = useState([]);
 
   const onLogout = async () => {
+    await logout();
+    toast.success("Logged out successfully");
+    navigate("/login");
+  };
 
-    await logout()
-    toast.success("Logged out successfully")
-    navigate("/login")
-  }
-
-  // Fetching all articles
   const getArticles = async () => {
     try {
-
-      let res = await axios.get(
-        "http://localhost:4000/user-api/articles",
-        { withCredentials: true }
-      )
-
-      console.log(res.data)
-
-      setArticles(res.data.payload)
-
+      const res = await API.get("/user-api/articles");
+      setArticles(res.data.payload);
+    } catch (err) {
+      console.log("Error fetching articles:", err);
+      toast.error("Failed to load articles");
     }
-    catch (err) {
-      console.log("Error fetching articles:", err)
-      toast.error("Failed to load articles")
-    }
-  }
+  };
+
   useEffect(() => {
-    getArticles()
-  }, [])
+    getArticles();
+  }, []);
+
   return (
     <div className="min-h-screen bg-zinc-950 px-6 py-8">
 
@@ -117,7 +107,6 @@ function UserDashboard() {
 
     </div>
   );
- 
 }
 
-export default UserDashboard
+export default UserDashboard;

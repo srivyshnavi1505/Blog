@@ -1,43 +1,40 @@
-import {useForm} from "react-hook-form";
-import { useAuth  } from "../store/authStore";
+import { useForm } from "react-hook-form";
+import { useAuth } from "../store/authStore";
 import { useEffect } from "react";
-import { useNavigate ,NavLink } from "react-router";
-import { toast} from 'react-hot-toast'
+import { useNavigate, NavLink } from "react-router";
+import { toast } from "react-hot-toast";
 
-function Login(){
+function Login() {
 
-const {register,handleSubmit,formState:{errors}} = useForm();
-const navigate = useNavigate();
-const Error = useAuth((state)=>state.error);
-const login = useAuth((state)=>state.login);
-const isAuthenticated = useAuth((state)=>state.isAuthenticated)
-const currentUser = useAuth((state)=>state.currentUser);
-const onUserLogin = async (userCredObj) =>{
-    console.log(userCredObj)
+  const { register, handleSubmit, formState: { errors } } = useForm();
+  const navigate = useNavigate();
+  const Error = useAuth((state) => state.error);
+  const login = useAuth((state) => state.login);
+  const isAuthenticated = useAuth((state) => state.isAuthenticated);
+  const currentUser = useAuth((state) => state.currentUser);
+
+  const onUserLogin = async (userCredObj) => {
     await login(userCredObj);
-};
+  };
 
-useEffect(()=>{
-    console.log("sdbhbs")
-    if(isAuthenticated){
-        if(currentUser.role === "USER"){
-            toast.success("loggedin successfully")
-            navigate('/user-profile')
-        }
-        if(currentUser.role === "AUTHOR"){
-            toast.success("loggedin successfully")
-            navigate('/author-profile')
-        }
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (currentUser.role === "USER") {
+        toast.success("Logged in successfully");
+        navigate("/user-profile");
+      }
+      if (currentUser.role === "AUTHOR") {
+        toast.success("Logged in successfully");
+        navigate("/author-profile");
+      }
     }
-},[isAuthenticated,currentUser]);
+  }, [isAuthenticated, currentUser]);
 
+  const onSubmit = (data) => {
+    onUserLogin(data);
+  };
 
-
-const onSubmit=(data)=>{
-onUserLogin(data)
-}
-
-return (
+  return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
 
       <div className="w-full max-w-sm">
@@ -99,4 +96,4 @@ return (
   );
 }
 
-export default Login
+export default Login;
