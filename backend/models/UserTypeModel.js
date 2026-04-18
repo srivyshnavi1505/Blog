@@ -19,7 +19,7 @@ const UserSchema = new Schema({
         required : [true, " password is needed"]
     }
     ,
-    profileImageUrl : {
+    ProfileImageUrl : {
         type :String,
         
     },

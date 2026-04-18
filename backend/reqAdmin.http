@@ -1,0 +1,19 @@
+
+### login
+POST http://localhost:4000/common-api/login
+Content-Type: application/json
+
+{
+  "email": "admin@gmail.com",
+  "password": "admin"
+}
+
+### Read all articles (Admin)
+GET http://localhost:4000/admin-api/articles
+
+### Block user
+PUT http://localhost:4000/admin-api/block/698a207e587eb8ba6eac7e9a
+
+### Unblock user
+PUT http://localhost:4000/admin-api/unblock/698a207e587eb8ba6eac7e9a
+  
